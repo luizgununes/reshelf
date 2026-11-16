@@ -158,7 +158,7 @@ function Shelf() {
                 <Undo2 />
                 {t.undoSession(counts.session)}
               </Button>
-              <Button size="sm" variant="ghost" disabled={busy} onClick={keepSession} title={t.keepSessionHint}>
+              <Button size="sm" variant="outline" disabled={busy} onClick={keepSession} title={t.keepSessionHint}>
                 <Check />
                 {t.keepAuto}
               </Button>

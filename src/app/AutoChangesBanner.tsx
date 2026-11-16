@@ -22,7 +22,7 @@ export function AutoChangesBanner({ count }: { count: number }) {
           <Undo2 />
           {t.undoAuto}
         </Button>
-        <Button size="sm" variant="ghost" disabled={busy} onClick={keep}>
+        <Button size="sm" variant="outline" disabled={busy} onClick={keep}>
           <Check />
           {t.keepAuto}
         </Button>
