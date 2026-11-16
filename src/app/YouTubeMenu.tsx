@@ -10,7 +10,7 @@ import { addDurations, checkVideos, countWithDuration, removeDurations, videoTar
 import { ChevronDown, Clock, ListVideo, ScanSearch, TimerOff, Trash2 } from 'lucide-react';
 import type { BookmarkNode } from '@/lib/bookmarks';
 import { Button } from '@/components/ui/button';
-import { durationsStatus } from './messages';
+import { durationsStatus, withSlowNote } from './messages';
 import { Recorder } from '@/lib/journal';
 import { SESSION_SOURCE } from './hooks';
 import { useI18n } from '@/lib/i18n';
@@ -31,8 +31,8 @@ export function YouTubeMenu({ folder, unavailable, onUnavailableChange }: YouTub
   const add = () =>
     run(async (progress) => {
       progress(t.addingDurations(0, targets.length));
-      const result = await addDurations(targets, new Recorder(SESSION_SOURCE), (done) =>
-        progress(t.addingDurations(done, targets.length)),
+      const result = await addDurations(targets, new Recorder(SESSION_SOURCE), (done, slowed) =>
+        progress(withSlowNote(t, t.addingDurations(done, targets.length), slowed)),
       );
       if (result.unavailable.length > 0) onUnavailableChange(new Set([...unavailable, ...result.unavailable]));
       return durationsStatus(t, result);
@@ -44,11 +44,18 @@ export function YouTubeMenu({ folder, unavailable, onUnavailableChange }: YouTub
   const check = () =>
     run(async (progress) => {
       progress(t.checkingVideos(0, targets.length));
-      const result = await checkVideos(targets, (done) => progress(t.checkingVideos(done, targets.length)));
+      const result = await checkVideos(targets, (done, slowed) =>
+        progress(withSlowNote(t, t.checkingVideos(done, targets.length), slowed)),
+      );
       onUnavailableChange(new Set(result.unavailable));
-      const unknown = result.unknown > 0 ? t.unknownVideos(result.unknown) : null;
-      if (result.unavailable.length > 0) return unknown ? unknown.charAt(0).toUpperCase() + unknown.slice(1) : undefined;
-      return unknown ? `${t.allAvailable} · ${unknown}` : t.allAvailable;
+      const notes = [
+        ...(result.unknown > 0 ? [t.unknownVideos(result.unknown)] : []),
+        ...(result.slowed ? [t.slowedDown] : []),
+      ];
+      if (result.unavailable.length === 0) return [t.allAvailable, ...notes].join(' · ');
+      if (notes.length === 0) return undefined;
+      const text = notes.join(' · ');
+      return text.charAt(0).toUpperCase() + text.slice(1);
     });
 
   const removeUnavailable = () =>

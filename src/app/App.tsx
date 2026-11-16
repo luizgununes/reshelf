@@ -57,6 +57,7 @@ function Shelf() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [unavailable, setUnavailable] = useState<Set<string>>(new Set());
   const [onlyUnavailable, setOnlyUnavailable] = useState(false);
+  const [anchorId, setAnchorId] = useState<string | null>(null);
 
   if (!roots) return null;
 
@@ -81,13 +82,22 @@ function Shelf() {
     clear();
   };
 
-  const toggle = (id: string, checked: boolean) =>
+  const orderedIds = entries.filter(({ node }) => !isFolder(node)).map(({ node }) => node.id);
+
+  const toggle = (id: string, checked: boolean, range: boolean) => {
+    const from = range && anchorId ? orderedIds.indexOf(anchorId) : -1;
+    const to = orderedIds.indexOf(id);
+    const ids = from === -1 || to === -1 ? [id] : orderedIds.slice(Math.min(from, to), Math.max(from, to) + 1);
     setSelected((current) => {
       const next = new Set(current);
-      if (checked) next.add(id);
-      else next.delete(id);
+      for (const target of ids) {
+        if (checked) next.add(target);
+        else next.delete(target);
+      }
       return next;
     });
+    setAnchorId(id);
+  };
 
   const toggleAll = (checked: boolean) => setSelected(checked ? new Set(visibleIds) : new Set());
 

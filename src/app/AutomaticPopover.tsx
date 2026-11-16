@@ -6,7 +6,7 @@ import type { BookmarkNode } from '@/lib/bookmarks';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { durationsStatus } from './messages';
+import { durationsStatus, withSlowNote } from './messages';
 import { Recorder } from '@/lib/journal';
 import { SESSION_SOURCE } from './hooks';
 import { sortFolder } from '@/lib/sort';
@@ -27,8 +27,8 @@ export function AutomaticPopover({ folder, settings }: AutomaticPopoverProps) {
     if (!checked || busy || targets.length === 0) return;
     await run(async (progress) => {
       progress(t.addingDurations(0, targets.length));
-      const result = await addDurations(targets, new Recorder(SESSION_SOURCE), (done) =>
-        progress(t.addingDurations(done, targets.length)),
+      const result = await addDurations(targets, new Recorder(SESSION_SOURCE), (done, slowed) =>
+        progress(withSlowNote(t, t.addingDurations(done, targets.length), slowed)),
       );
       return durationsStatus(t, result);
     });

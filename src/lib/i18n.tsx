@@ -50,6 +50,8 @@ type Messages = {
   durationsUpdated: Counted;
   durationsFailed: Counted;
   durationsNoLength: Counted;
+  slowingDown: string;
+  slowedDown: string;
   removeDurations: string;
   removeDurationsHint: string;
   noDurations: string;
@@ -75,6 +77,7 @@ type Messages = {
   autoSortLabel: string;
   autoSortDescription: (rule: string) => string;
   selectBookmark: (title: string) => string;
+  editTitle: string;
   selectAll: string;
   selectedCount: Counted;
   moveTo: string;
@@ -144,6 +147,8 @@ const en: Messages = {
   durationsUpdated: (n) => (n === 1 ? '1 title updated' : `${n} titles updated`),
   durationsFailed: (n) => (n === 1 ? "1 video couldn't be read" : `${n} videos couldn't be read`),
   durationsNoLength: (n) => (n === 1 ? '1 live or upcoming video has no duration' : `${n} live or upcoming videos have no duration`),
+  slowingDown: 'YouTube is limiting requests, going slower',
+  slowedDown: 'went slower because YouTube limited requests',
   removeDurations: 'Remove Durations',
   removeDurationsHint: 'Take the duration off every title in this folder',
   noDurations: 'No titles in this folder have a duration',
@@ -169,6 +174,7 @@ const en: Messages = {
   autoSortLabel: 'Keep This Folder Sorted',
   autoSortDescription: (rule) => `Sorts again whenever a bookmark lands here. Current order: ${rule}.`,
   selectBookmark: (title) => `Select ${title}`,
+  editTitle: 'Edit Title',
   selectAll: 'Select All',
   selectedCount: (n) => `${n} selected`,
   moveTo: 'Move to',
@@ -239,6 +245,8 @@ const ptBR: Messages = {
   durationsUpdated: (n) => (n === 1 ? '1 título atualizado' : `${n} títulos atualizados`),
   durationsFailed: (n) => (n === 1 ? 'Não foi possível ler 1 vídeo' : `Não foi possível ler ${n} vídeos`),
   durationsNoLength: (n) => (n === 1 ? '1 live ou estreia ainda sem duração' : `${n} lives ou estreias ainda sem duração`),
+  slowingDown: 'O YouTube está limitando as leituras, indo mais devagar',
+  slowedDown: 'foi mais devagar porque o YouTube limitou as leituras',
   removeDurations: 'Remover Duração',
   removeDurationsHint: 'Tira a duração de todos os títulos desta pasta',
   noDurations: 'Nenhum título desta pasta tem duração',
@@ -264,6 +272,7 @@ const ptBR: Messages = {
   autoSortLabel: 'Manter Esta Pasta Ordenada',
   autoSortDescription: (rule) => `Ordena de novo sempre que um favorito entra aqui. Ordem atual: ${rule}.`,
   selectBookmark: (title) => `Selecionar ${title}`,
+  editTitle: 'Editar Título',
   selectAll: 'Selecionar Todos',
   selectedCount: (n) => (n === 1 ? '1 selecionado' : `${n} selecionados`),
   moveTo: 'Mover para',
@@ -334,6 +343,8 @@ const es: Messages = {
   durationsUpdated: (n) => (n === 1 ? '1 título actualizado' : `${n} títulos actualizados`),
   durationsFailed: (n) => (n === 1 ? 'No se pudo leer 1 video' : `No se pudieron leer ${n} videos`),
   durationsNoLength: (n) => (n === 1 ? '1 directo o estreno aún sin duración' : `${n} directos o estrenos aún sin duración`),
+  slowingDown: 'YouTube está limitando las lecturas, yendo más despacio',
+  slowedDown: 'fue más despacio porque YouTube limitó las lecturas',
   removeDurations: 'Quitar Duración',
   removeDurationsHint: 'Quita la duración de todos los títulos de esta carpeta',
   noDurations: 'Ningún título de esta carpeta tiene duración',
@@ -359,6 +370,7 @@ const es: Messages = {
   autoSortLabel: 'Mantener Esta Carpeta Ordenada',
   autoSortDescription: (rule) => `Vuelve a ordenar cada vez que llega un marcador. Orden actual: ${rule}.`,
   selectBookmark: (title) => `Seleccionar ${title}`,
+  editTitle: 'Editar Título',
   selectAll: 'Seleccionar Todos',
   selectedCount: (n) => (n === 1 ? '1 seleccionado' : `${n} seleccionados`),
   moveTo: 'Mover a',
