@@ -20,6 +20,7 @@ import { ChevronRight, Folder, FolderOpen } from 'lucide-react';
 import { DuplicatesDialog } from './DuplicatesDialog';
 import { LanguageSelect } from './LanguageSelect';
 import { BackupButton } from './BackupButton';
+import { ThemeSelect } from './ThemeSelect';
 import { useI18n } from '@/lib/i18n';
 
 type FolderTreeProps = {
@@ -58,6 +59,7 @@ export function FolderTree({ roots, selectedId, onSelect }: FolderTreeProps) {
             <BackupButton />
           </SidebarMenuItem>
         </SidebarMenu>
+        <ThemeSelect />
         <LanguageSelect />
       </SidebarFooter>
       <SidebarRail />

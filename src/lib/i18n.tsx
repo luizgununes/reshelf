@@ -17,6 +17,10 @@ type Counted = (count: number) => string;
 type Messages = {
   folders: string;
   language: string;
+  theme: string;
+  themeSystem: string;
+  themeLight: string;
+  themeDark: string;
   untitledFolder: string;
   expandFolder: (title: string) => string;
   emptyTitle: string;
@@ -107,6 +111,10 @@ type Messages = {
 const en: Messages = {
   folders: 'Folders',
   language: 'Language',
+  theme: 'Theme',
+  themeSystem: 'System Theme',
+  themeLight: 'Light',
+  themeDark: 'Dark',
   untitledFolder: 'Untitled Folder',
   expandFolder: (title) => `Expand ${title}`,
   emptyTitle: 'This Folder Is Empty',
@@ -208,6 +216,10 @@ const en: Messages = {
 const ptBR: Messages = {
   folders: 'Pastas',
   language: 'Idioma',
+  theme: 'Tema',
+  themeSystem: 'Tema do Sistema',
+  themeLight: 'Claro',
+  themeDark: 'Escuro',
   untitledFolder: 'Pasta sem Nome',
   expandFolder: (title) => `Expandir ${title}`,
   emptyTitle: 'Esta Pasta Está Vazia',
@@ -309,6 +321,10 @@ const ptBR: Messages = {
 const es: Messages = {
   folders: 'Carpetas',
   language: 'Idioma',
+  theme: 'Tema',
+  themeSystem: 'Tema del Sistema',
+  themeLight: 'Claro',
+  themeDark: 'Oscuro',
   untitledFolder: 'Carpeta sin Nombre',
   expandFolder: (title) => `Expandir ${title}`,
   emptyTitle: 'Esta Carpeta Está Vacía',

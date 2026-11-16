@@ -39,7 +39,7 @@ It started from a "To Watch" folder full of YouTube videos: put each video's len
 
 **Everything else**
 - English, Portuguese (Brazil) and Spanish, switchable inside the extension.
-- Light and dark theme, following your system.
+- Light and dark theme: follow the system or pick one.
 
 ## Install from source
 
