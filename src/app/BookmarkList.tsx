@@ -1,5 +1,4 @@
 import { type BookmarkNode, countBookmarks, displayHost, faviconUrl, isFolder } from '@/lib/bookmarks';
-import { durationFromTitle, formatDuration, stripDuration, withDuration } from '@/lib/youtube';
 import { ChevronRight, Folder, Pencil } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -78,13 +77,11 @@ type BookmarkRowProps = {
 function BookmarkRow({ node, path, checked, unavailable, onToggle }: BookmarkRowProps) {
   const { t } = useI18n();
   const [editing, setEditing] = useState(false);
-  const seconds = durationFromTitle(node.title);
-  const title = stripDuration(node.title) || node.url!;
+  const title = node.title || node.url!;
   const host = displayHost(node.url!);
   const folderPath = path?.map((part) => part || t.untitledFolder).join(' / ');
 
-  const save = (value: string) =>
-    new Recorder(SESSION_SOURCE).updateTitle(node.id, seconds === null ? value : withDuration(value, seconds));
+  const save = (value: string) => new Recorder(SESSION_SOURCE).updateTitle(node.id, value);
 
   return (
     <li
@@ -142,11 +139,6 @@ function BookmarkRow({ node, path, checked, unavailable, onToggle }: BookmarkRow
         </Button>
       )}
       {unavailable && <Badge variant="destructive">{t.unavailableBadge}</Badge>}
-      {seconds !== null && (
-        <Badge variant="secondary" className="font-mono tabular-nums">
-          {formatDuration(seconds)}
-        </Badge>
-      )}
     </li>
   );
 }
