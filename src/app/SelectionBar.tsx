@@ -11,20 +11,22 @@ import { useTask } from './task';
 type SelectionBarProps = {
   roots: BookmarkNode[];
   selected: string[];
+  currentFolderId: string | null;
   onClear: () => void;
 };
 
-export function SelectionBar({ roots, selected, onClear }: SelectionBarProps) {
+export function SelectionBar({ roots, selected, currentFolderId, onClear }: SelectionBarProps) {
   const { t } = useI18n();
   const { busy, run } = useTask();
-  const folders = flattenFolders(roots);
-  const [destination, setDestination] = useState(folders[0]?.node.id ?? '');
+  const folders = flattenFolders(roots).filter(({ node }) => node.id !== currentFolderId);
+  const [destination, setDestination] = useState('');
 
   const move = () =>
     run(async () => {
       const recorder = new Recorder(SESSION_SOURCE);
       let moved = 0;
       for (const id of selected) if (await recorder.move(id, { parentId: destination })) moved++;
+      setDestination('');
       onClear();
       return t.moved(moved);
     });
@@ -50,7 +52,10 @@ export function SelectionBar({ roots, selected, onClear }: SelectionBarProps) {
           onChange={(event) => setDestination(event.target.value)}
           className="max-w-64"
         >
-          {folders.map(({ node, path }) => (
+          <NativeSelectOption value="" disabled>
+          {t.chooseFolder}
+        </NativeSelectOption>
+        {folders.map(({ node, path }) => (
             <NativeSelectOption key={node.id} value={node.id}>
               {path.map((part) => part || t.untitledFolder).join(' / ')}
             </NativeSelectOption>

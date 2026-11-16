@@ -14,21 +14,22 @@ export function videoTargets(folder: BookmarkNode): VideoTarget[] {
   });
 }
 
-export type DurationResult = { updated: number; failed: number; unavailable: string[] };
+export type DurationResult = { updated: number; failed: number; noDuration: number; unavailable: string[] };
 
 export async function addDurations(
   targets: VideoTarget[],
   recorder: Recorder,
   onProgress: (done: number) => void = () => {},
 ): Promise<DurationResult> {
-  const result: DurationResult = { updated: 0, failed: 0, unavailable: [] };
+  const result: DurationResult = { updated: 0, failed: 0, noDuration: 0, unavailable: [] };
   let done = 0;
 
   await runPool(targets, CONCURRENCY, async ({ bookmark, videoId }) => {
     try {
       const info = await fetchVideoInfo(videoId);
       if (info.kind === 'unavailable') result.unavailable.push(bookmark.id);
-      if (info.kind !== 'ok' || info.seconds === null) result.failed++;
+      if (info.kind !== 'ok') result.failed++;
+      else if (info.seconds === null) result.noDuration++;
       else if (await recorder.updateTitle(bookmark.id, withDuration(bookmark.title, info.seconds))) result.updated++;
     } catch {
       result.failed++;

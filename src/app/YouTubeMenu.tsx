@@ -8,11 +8,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { addDurations, checkVideos, countWithDuration, removeDurations, videoTargets } from '@/lib/videos';
 import { ChevronDown, Clock, ListVideo, ScanSearch, TimerOff, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import type { BookmarkNode } from '@/lib/bookmarks';
+import { Button } from '@/components/ui/button';
+import { durationsStatus } from './messages';
 import { Recorder } from '@/lib/journal';
-import { useI18n } from '@/lib/i18n';
 import { SESSION_SOURCE } from './hooks';
+import { useI18n } from '@/lib/i18n';
 import { useTask } from './task';
 
 type YouTubeMenuProps = {
@@ -34,9 +35,7 @@ export function YouTubeMenu({ folder, unavailable, onUnavailableChange }: YouTub
         progress(t.addingDurations(done, targets.length)),
       );
       if (result.unavailable.length > 0) onUnavailableChange(new Set([...unavailable, ...result.unavailable]));
-      const parts = [t.durationsUpdated(result.updated)];
-      if (result.failed > 0) parts.push(t.durationsFailed(result.failed));
-      return { text: parts.join(' · '), tone: result.failed > 0 ? 'error' : 'muted' };
+      return durationsStatus(t, result);
     });
 
   const strip = () =>

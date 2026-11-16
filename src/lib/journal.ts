@@ -10,31 +10,47 @@ export type JournalOp =
   | { type: 'move'; bookmarkId: string; fromParentId: string; fromIndex: number }
   | { type: 'remove'; bookmarkId: string; parentId: string; index: number; title: string; url: string };
 
-type ParsedKey = { key: string; source: string; at: number; seq: number };
+type ParsedKey = { key: string; source: string; at: number; seq: number; action: string };
 
 let sequence = 0;
 
-function makeKey(source: string) {
+function makeKey(source: string, action: string) {
   const at = String(Date.now()).padStart(15, '0');
   const seq = String(sequence++).padStart(8, '0');
-  return `${PREFIX}${source}|${at}|${seq}|${Math.random().toString(36).slice(2, 8)}`;
+  return `${PREFIX}${source}|${at}|${seq}|${action}`;
+}
+
+function newActionId() {
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function parseKey(key: string): ParsedKey | null {
   if (!key.startsWith(PREFIX)) return null;
-  const [, source, at, seq] = key.split('|');
-  return { key, source, at: Number(at), seq: Number(seq) };
+  const [, source, at, seq, action] = key.split('|');
+  return { key, source, at: Number(at), seq: Number(seq), action };
 }
 
-export function newSessionSource() {
-  return `session-${Date.now()}`;
+const SESSION_KEY = 'reshelfSession';
+
+export function tabSessionSource() {
+  try {
+    const existing = sessionStorage.getItem(SESSION_KEY);
+    if (existing) return existing;
+    const created = `session-${Date.now()}`;
+    sessionStorage.setItem(SESSION_KEY, created);
+    return created;
+  } catch {
+    return `session-${Date.now()}`;
+  }
 }
 
 export class Recorder {
+  private readonly action = newActionId();
+
   constructor(private readonly source: string) {}
 
   private async record(op: JournalOp) {
-    await chrome.storage.local.set({ [makeKey(this.source)]: op });
+    await chrome.storage.local.set({ [makeKey(this.source, this.action)]: op });
   }
 
   async updateTitle(id: string, title: string) {
@@ -75,9 +91,11 @@ async function journalKeys() {
 }
 
 export async function countBySource() {
-  const counts = new Map<string, number>();
-  for (const { source } of await journalKeys()) counts.set(source, (counts.get(source) ?? 0) + 1);
-  return counts;
+  const actions = new Map<string, Set<string>>();
+  for (const { source, action } of await journalKeys()) {
+    actions.set(source, (actions.get(source) ?? new Set()).add(action));
+  }
+  return new Map([...actions].map(([source, ids]) => [source, ids.size]));
 }
 
 export async function forgetSources(match: (source: string) => boolean) {
@@ -134,6 +152,7 @@ export async function undoSource(source: string) {
     .filter((entry) => entry.source === source)
     .sort((a, b) => b.at - a.at || b.seq - a.seq);
   if (entries.length === 0) return 0;
+  const actionCount = new Set(entries.map((entry) => entry.action)).size;
 
   const stored = await chrome.storage.local.get(entries.map((entry) => entry.key));
   const ids = new Map<string, string>();
@@ -154,5 +173,5 @@ export async function undoSource(source: string) {
     await chrome.storage.local.set({ [PAUSE_KEY]: Date.now() + 3000 });
   }
 
-  return entries.length;
+  return actionCount;
 }

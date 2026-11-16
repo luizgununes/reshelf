@@ -29,6 +29,7 @@ type Messages = {
   noResultsDescription: (query: string) => string;
   undoSession: Counted;
   undoSessionHint: string;
+  keepSessionHint: string;
   changesUndone: Counted;
   autoChanges: Counted;
   undoAuto: string;
@@ -48,6 +49,7 @@ type Messages = {
   addingDurations: (done: number, total: number) => string;
   durationsUpdated: Counted;
   durationsFailed: Counted;
+  durationsNoLength: Counted;
   removeDurations: string;
   removeDurationsHint: string;
   noDurations: string;
@@ -76,6 +78,7 @@ type Messages = {
   selectAll: string;
   selectedCount: Counted;
   moveTo: string;
+  chooseFolder: string;
   move: string;
   deleteSelected: string;
   clearSelection: string;
@@ -109,8 +112,9 @@ const en: Messages = {
   noResultsTitle: 'Nothing Found',
   noResultsDescription: (query) => `No bookmark title or link matches "${query}".`,
   undoSession: (n) => `Undo Changes (${n})`,
-  undoSessionHint: 'Revert everything Reshelf changed since you opened this page',
-  changesUndone: (n) => (n === 1 ? '1 change undone' : `${n} changes undone`),
+  undoSessionHint: 'Revert everything Reshelf changed since you opened this tab',
+  keepSessionHint: 'Keep the changes and clear the undo history',
+  changesUndone: (n) => (n === 1 ? '1 action undone' : `${n} actions undone`),
   autoChanges: (n) =>
     n === 1
       ? 'Reshelf made 1 automatic change in the background.'
@@ -139,6 +143,7 @@ const en: Messages = {
   addingDurations: (done, total) => `Adding durations… ${done}/${total}`,
   durationsUpdated: (n) => (n === 1 ? '1 title updated' : `${n} titles updated`),
   durationsFailed: (n) => (n === 1 ? "1 video couldn't be read" : `${n} videos couldn't be read`),
+  durationsNoLength: (n) => (n === 1 ? '1 live or upcoming video has no duration' : `${n} live or upcoming videos have no duration`),
   removeDurations: 'Remove Durations',
   removeDurationsHint: 'Take the duration off every title in this folder',
   noDurations: 'No titles in this folder have a duration',
@@ -167,6 +172,7 @@ const en: Messages = {
   selectAll: 'Select All',
   selectedCount: (n) => `${n} selected`,
   moveTo: 'Move to',
+  chooseFolder: 'Choose a Folder',
   move: 'Move',
   deleteSelected: 'Delete',
   clearSelection: 'Clear Selection',
@@ -201,8 +207,9 @@ const ptBR: Messages = {
   noResultsTitle: 'Nada Encontrado',
   noResultsDescription: (query) => `Nenhum título ou link de favorito tem "${query}".`,
   undoSession: (n) => `Desfazer Mudanças (${n})`,
-  undoSessionHint: 'Volta tudo o que o Reshelf mudou desde que você abriu esta página',
-  changesUndone: (n) => (n === 1 ? '1 mudança desfeita' : `${n} mudanças desfeitas`),
+  undoSessionHint: 'Volta tudo o que o Reshelf mudou desde que você abriu esta aba',
+  keepSessionHint: 'Mantém as mudanças e limpa o histórico de desfazer',
+  changesUndone: (n) => (n === 1 ? '1 ação desfeita' : `${n} ações desfeitas`),
   autoChanges: (n) =>
     n === 1
       ? 'O Reshelf fez 1 mudança automática em segundo plano.'
@@ -231,6 +238,7 @@ const ptBR: Messages = {
   addingDurations: (done, total) => `Adicionando duração… ${done}/${total}`,
   durationsUpdated: (n) => (n === 1 ? '1 título atualizado' : `${n} títulos atualizados`),
   durationsFailed: (n) => (n === 1 ? 'Não foi possível ler 1 vídeo' : `Não foi possível ler ${n} vídeos`),
+  durationsNoLength: (n) => (n === 1 ? '1 live ou estreia ainda sem duração' : `${n} lives ou estreias ainda sem duração`),
   removeDurations: 'Remover Duração',
   removeDurationsHint: 'Tira a duração de todos os títulos desta pasta',
   noDurations: 'Nenhum título desta pasta tem duração',
@@ -259,6 +267,7 @@ const ptBR: Messages = {
   selectAll: 'Selecionar Todos',
   selectedCount: (n) => (n === 1 ? '1 selecionado' : `${n} selecionados`),
   moveTo: 'Mover para',
+  chooseFolder: 'Escolha uma Pasta',
   move: 'Mover',
   deleteSelected: 'Apagar',
   clearSelection: 'Limpar Seleção',
@@ -293,8 +302,9 @@ const es: Messages = {
   noResultsTitle: 'No se Encontró Nada',
   noResultsDescription: (query) => `Ningún título o enlace de marcador contiene "${query}".`,
   undoSession: (n) => `Deshacer Cambios (${n})`,
-  undoSessionHint: 'Revierte todo lo que Reshelf cambió desde que abriste esta página',
-  changesUndone: (n) => (n === 1 ? '1 cambio deshecho' : `${n} cambios deshechos`),
+  undoSessionHint: 'Revierte todo lo que Reshelf cambió desde que abriste esta pestaña',
+  keepSessionHint: 'Mantiene los cambios y borra el historial para deshacer',
+  changesUndone: (n) => (n === 1 ? '1 acción deshecha' : `${n} acciones deshechas`),
   autoChanges: (n) =>
     n === 1
       ? 'Reshelf hizo 1 cambio automático en segundo plano.'
@@ -323,6 +333,7 @@ const es: Messages = {
   addingDurations: (done, total) => `Añadiendo duración… ${done}/${total}`,
   durationsUpdated: (n) => (n === 1 ? '1 título actualizado' : `${n} títulos actualizados`),
   durationsFailed: (n) => (n === 1 ? 'No se pudo leer 1 video' : `No se pudieron leer ${n} videos`),
+  durationsNoLength: (n) => (n === 1 ? '1 directo o estreno aún sin duración' : `${n} directos o estrenos aún sin duración`),
   removeDurations: 'Quitar Duración',
   removeDurationsHint: 'Quita la duración de todos los títulos de esta carpeta',
   noDurations: 'Ningún título de esta carpeta tiene duración',
@@ -351,6 +362,7 @@ const es: Messages = {
   selectAll: 'Seleccionar Todos',
   selectedCount: (n) => (n === 1 ? '1 seleccionado' : `${n} seleccionados`),
   moveTo: 'Mover a',
+  chooseFolder: 'Elige una Carpeta',
   move: 'Mover',
   deleteSelected: 'Borrar',
   clearSelection: 'Limpiar Selección',

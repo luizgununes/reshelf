@@ -1,8 +1,8 @@
 import { FOLDER_SETTINGS_KEY, type FolderSettingsMap, loadFolderSettings } from '@/lib/settings';
-import { AUTO_SOURCE, countBySource, forgetSources, newSessionSource } from '@/lib/journal';
+import { AUTO_SOURCE, countBySource, forgetSources, tabSessionSource } from '@/lib/journal';
 import { useEffect, useState } from 'react';
 
-export const SESSION_SOURCE = newSessionSource();
+export const SESSION_SOURCE = tabSessionSource();
 
 export function useJournalCounts() {
   const [counts, setCounts] = useState({ session: 0, auto: 0 });

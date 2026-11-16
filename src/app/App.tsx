@@ -3,7 +3,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { SESSION_SOURCE, useFolderSettingsMap, useJournalCounts } from './hooks';
-import { FolderOpen, Search, SearchX, Undo2 } from 'lucide-react';
+import { Check, FolderOpen, Search, SearchX, Undo2 } from 'lucide-react';
 import { BookmarkList, type ListEntry } from './BookmarkList';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useBookmarkTree } from '@/lib/useBookmarkTree';
@@ -17,7 +17,7 @@ import { AutomaticPopover } from './AutomaticPopover';
 import { TaskProvider, useTask } from './task';
 import { Button } from '@/components/ui/button';
 import { SelectionBar } from './SelectionBar';
-import { undoSource } from '@/lib/journal';
+import { forgetSources, undoSource } from '@/lib/journal';
 import { SortControl } from './SortControl';
 import { YouTubeMenu } from './YouTubeMenu';
 import { FolderTree } from './FolderTree';
@@ -92,6 +92,7 @@ function Shelf() {
   const toggleAll = (checked: boolean) => setSelected(checked ? new Set(visibleIds) : new Set());
 
   const undoSession = () => run(async () => t.changesUndone(await undoSource(SESSION_SOURCE)));
+  const keepSession = () => forgetSources((source) => source === SESSION_SOURCE);
 
   return (
     <SidebarProvider>
@@ -115,17 +116,16 @@ function Shelf() {
             />
           </InputGroup>
           {counts.session > 0 && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="ml-auto"
-              disabled={busy}
-              onClick={undoSession}
-              title={t.undoSessionHint}
-            >
-              <Undo2 />
-              {t.undoSession(counts.session)}
-            </Button>
+            <div className="ml-auto flex items-center gap-2">
+              <Button size="sm" variant="outline" disabled={busy} onClick={undoSession} title={t.undoSessionHint}>
+                <Undo2 />
+                {t.undoSession(counts.session)}
+              </Button>
+              <Button size="sm" variant="ghost" disabled={busy} onClick={keepSession} title={t.keepSessionHint}>
+                <Check />
+                {t.keepAuto}
+              </Button>
+            </div>
           )}
         </header>
 
@@ -145,7 +145,7 @@ function Shelf() {
               <div className="flex flex-wrap items-center gap-2">
                 <SortControl folder={folder} settings={settings} />
                 <YouTubeMenu folder={folder} unavailable={unavailable} onUnavailableChange={setUnavailable} />
-                <AutomaticPopover folderId={folder.id} settings={settings} />
+                <AutomaticPopover folder={folder} settings={settings} />
               </div>
             )}
           </div>
@@ -188,7 +188,12 @@ function Shelf() {
         </main>
 
         {selectedIds.length > 0 && (
-          <SelectionBar roots={roots} selected={selectedIds} onClear={() => setSelected(new Set())} />
+          <SelectionBar
+            roots={roots}
+            selected={selectedIds}
+            currentFolderId={searching ? null : folder.id}
+            onClear={() => setSelected(new Set())}
+          />
         )}
       </SidebarInset>
     </SidebarProvider>

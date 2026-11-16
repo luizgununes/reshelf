@@ -28,14 +28,19 @@ export function SortControl({ folder, settings }: { folder: BookmarkNode; settin
   const { sort } = settings;
   const bookmarkCount = (folder.children ?? []).filter((child) => child.url).length;
 
-  const updateSort = (patch: Partial<FolderSettings['sort']>) =>
-    saveFolderSettings(folder.id, { sort: { ...sort, ...patch } });
-
-  const sortNow = () =>
+  const applySort = (rule: FolderSettings['sort']) =>
     run(async () => {
-      const moved = await sortFolder(folder.id, sort, new Recorder(SESSION_SOURCE));
+      const moved = await sortFolder(folder.id, rule, new Recorder(SESSION_SOURCE));
       return moved === 0 ? t.alreadySorted : t.sorted(moved);
     });
+
+  const updateSort = async (patch: Partial<FolderSettings['sort']>) => {
+    const next = { ...sort, ...patch };
+    await saveFolderSettings(folder.id, { sort: next });
+    if (settings.autoSort && !busy) await applySort(next);
+  };
+
+  const sortNow = () => applySort(sort);
 
   return (
     <ButtonGroup>
