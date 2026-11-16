@@ -67,10 +67,12 @@ export function YouTubeMenu({ folder, unavailable, onUnavailableChange }: YouTub
       return t.unavailableRemoved(removed);
     });
 
+  if (targets.length === 0) return null;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" disabled={busy || targets.length === 0} title={targets.length === 0 ? t.noYoutubeVideos : undefined}>
+        <Button variant="outline" size="sm" disabled={busy}>
           <ListVideo />
           {t.youtube}
           <ChevronDown />

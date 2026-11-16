@@ -45,7 +45,6 @@ type Messages = {
   alreadySorted: string;
   addDurations: string;
   addDurationsHint: string;
-  noYoutubeVideos: string;
   addingDurations: (done: number, total: number) => string;
   durationsUpdated: Counted;
   durationsFailed: Counted;
@@ -142,7 +141,6 @@ const en: Messages = {
   alreadySorted: 'Already in order',
   addDurations: 'Add Durations',
   addDurationsHint: 'Put each YouTube video length at the start of its title',
-  noYoutubeVideos: 'No YouTube videos in this folder',
   addingDurations: (done, total) => `Adding durations… ${done}/${total}`,
   durationsUpdated: (n) => (n === 1 ? '1 title updated' : `${n} titles updated`),
   durationsFailed: (n) => (n === 1 ? "1 video couldn't be read" : `${n} videos couldn't be read`),
@@ -240,7 +238,6 @@ const ptBR: Messages = {
   alreadySorted: 'Já está em ordem',
   addDurations: 'Adicionar Duração',
   addDurationsHint: 'Coloca a duração de cada vídeo do YouTube no começo do título',
-  noYoutubeVideos: 'Nenhum vídeo do YouTube nesta pasta',
   addingDurations: (done, total) => `Adicionando duração… ${done}/${total}`,
   durationsUpdated: (n) => (n === 1 ? '1 título atualizado' : `${n} títulos atualizados`),
   durationsFailed: (n) => (n === 1 ? 'Não foi possível ler 1 vídeo' : `Não foi possível ler ${n} vídeos`),
@@ -338,7 +335,6 @@ const es: Messages = {
   alreadySorted: 'Ya está en orden',
   addDurations: 'Añadir Duración',
   addDurationsHint: 'Pone la duración de cada video de YouTube al inicio del título',
-  noYoutubeVideos: 'No hay videos de YouTube en esta carpeta',
   addingDurations: (done, total) => `Añadiendo duración… ${done}/${total}`,
   durationsUpdated: (n) => (n === 1 ? '1 título actualizado' : `${n} títulos actualizados`),
   durationsFailed: (n) => (n === 1 ? 'No se pudo leer 1 video' : `No se pudieron leer ${n} videos`),
