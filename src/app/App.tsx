@@ -21,6 +21,7 @@ import { resolveFolderSettings } from '@/lib/settings';
 import { UnavailableAlert } from './UnavailableAlert';
 import { Separator } from '@/components/ui/separator';
 import { AutomaticPopover } from './AutomaticPopover';
+import { RandomPickButton } from './RandomPickButton';
 import { I18nProvider, useI18n } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { TaskProvider, useTask } from './task';
@@ -196,6 +197,7 @@ function Shelf() {
               <div className="flex flex-wrap items-center gap-2">
                 <SortControl folder={folder} settings={settings} />
                 <YouTubeMenu folder={folder} unavailable={unavailable} onUnavailableChange={setUnavailable} />
+                <RandomPickButton folder={folder} unavailable={unavailable} />
                 <AutomaticPopover folder={folder} settings={settings} />
               </div>
             )}

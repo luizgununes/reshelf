@@ -56,6 +56,8 @@ type Messages = {
   noDurations: string;
   durationsRemoved: Counted;
   checkVideos: string;
+  randomPick: string;
+  randomPickHint: string;
   checkVideosHint: string;
   checkingVideos: (done: number, total: number) => string;
   unavailableFound: Counted;
@@ -153,6 +155,8 @@ const en: Messages = {
   noDurations: 'No titles in this folder have a duration',
   durationsRemoved: (n) => (n === 1 ? 'Duration removed from 1 title' : `Duration removed from ${n} titles`),
   checkVideos: 'Check Videos',
+  randomPick: 'Random Pick',
+  randomPickHint: 'Open a random bookmark from this folder in a new tab',
   checkVideosHint: 'Find videos that were deleted or made private',
   checkingVideos: (done, total) => `Checking videos… ${done}/${total}`,
   unavailableFound: (n) => (n === 1 ? '1 video is unavailable' : `${n} videos are unavailable`),
@@ -251,6 +255,8 @@ const ptBR: Messages = {
   noDurations: 'Nenhum título desta pasta tem duração',
   durationsRemoved: (n) => (n === 1 ? 'Duração removida de 1 título' : `Duração removida de ${n} títulos`),
   checkVideos: 'Verificar Vídeos',
+  randomPick: 'Sortear',
+  randomPickHint: 'Abre um favorito aleatório desta pasta numa aba nova',
   checkVideosHint: 'Encontra vídeos que foram apagados ou ficaram privados',
   checkingVideos: (done, total) => `Verificando vídeos… ${done}/${total}`,
   unavailableFound: (n) => (n === 1 ? '1 vídeo indisponível' : `${n} vídeos indisponíveis`),
@@ -349,6 +355,8 @@ const es: Messages = {
   noDurations: 'Ningún título de esta carpeta tiene duración',
   durationsRemoved: (n) => (n === 1 ? 'Duración quitada de 1 título' : `Duración quitada de ${n} títulos`),
   checkVideos: 'Revisar Videos',
+  randomPick: 'Sortear',
+  randomPickHint: 'Abre un marcador aleatorio de esta carpeta en una pestaña nueva',
   checkVideosHint: 'Encuentra videos que fueron borrados o se volvieron privados',
   checkingVideos: (done, total) => `Revisando videos… ${done}/${total}`,
   unavailableFound: (n) => (n === 1 ? '1 video no disponible' : `${n} videos no disponibles`),
