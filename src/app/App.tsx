@@ -1,0 +1,196 @@
+import { BOOKMARKS_BAR_ID, type BookmarkNode, countBookmarks, findNode, flattenBookmarks, isFolder } from '@/lib/bookmarks';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SESSION_SOURCE, useFolderSettingsMap, useJournalCounts } from './hooks';
+import { FolderOpen, Search, SearchX, Undo2 } from 'lucide-react';
+import { BookmarkList, type ListEntry } from './BookmarkList';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { useBookmarkTree } from '@/lib/useBookmarkTree';
+import { UnavailableAlert } from './UnavailableAlert';
+import { AutoChangesBanner } from './AutoChangesBanner';
+import { StatusAlert } from './StatusAlert';
+import { resolveFolderSettings } from '@/lib/settings';
+import { Separator } from '@/components/ui/separator';
+import { I18nProvider, useI18n } from '@/lib/i18n';
+import { AutomaticPopover } from './AutomaticPopover';
+import { TaskProvider, useTask } from './task';
+import { Button } from '@/components/ui/button';
+import { SelectionBar } from './SelectionBar';
+import { undoSource } from '@/lib/journal';
+import { SortControl } from './SortControl';
+import { YouTubeMenu } from './YouTubeMenu';
+import { FolderTree } from './FolderTree';
+import { useState } from 'react';
+
+export function App() {
+  return (
+    <I18nProvider>
+      <TaskProvider>
+        <TooltipProvider>
+          <Shelf />
+        </TooltipProvider>
+      </TaskProvider>
+    </I18nProvider>
+  );
+}
+
+function normalize(value: string) {
+  return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+}
+
+function searchEntries(roots: BookmarkNode[], query: string): ListEntry[] {
+  const needle = normalize(query.trim());
+  return flattenBookmarks(roots).filter(
+    ({ node }) => normalize(node.title).includes(needle) || normalize(node.url ?? '').includes(needle),
+  );
+}
+
+function Shelf() {
+  const { t } = useI18n();
+  const { busy, run, clear } = useTask();
+  const roots = useBookmarkTree();
+  const settingsMap = useFolderSettingsMap();
+  const counts = useJournalCounts();
+  const [folderId, setFolderId] = useState(BOOKMARKS_BAR_ID);
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [unavailable, setUnavailable] = useState<Set<string>>(new Set());
+  const [onlyUnavailable, setOnlyUnavailable] = useState(false);
+
+  if (!roots) return null;
+
+  const folder = findNode(roots, folderId) ?? roots[0];
+  const settings = resolveFolderSettings(settingsMap, folder.id);
+  const searching = query.trim().length > 0;
+  const presentUnavailable = (folder.children ?? []).filter((node) => unavailable.has(node.id));
+  const filtering = !searching && onlyUnavailable && presentUnavailable.length > 0;
+  const entries: ListEntry[] = searching
+    ? searchEntries(roots, query)
+    : (filtering ? presentUnavailable : (folder.children ?? [])).map((node) => ({ node }));
+  const visibleIds = new Set(entries.filter(({ node }) => !isFolder(node)).map(({ node }) => node.id));
+  const selectedIds = [...selected].filter((id) => visibleIds.has(id));
+  const allSelected = visibleIds.size > 0 && selectedIds.length === visibleIds.size;
+
+  const openFolder = (id: string) => {
+    setFolderId(id);
+    setQuery('');
+    setSelected(new Set());
+    setUnavailable(new Set());
+    setOnlyUnavailable(false);
+    clear();
+  };
+
+  const toggle = (id: string, checked: boolean) =>
+    setSelected((current) => {
+      const next = new Set(current);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+
+  const toggleAll = (checked: boolean) => setSelected(checked ? new Set(visibleIds) : new Set());
+
+  const undoSession = () => run(async () => t.changesUndone(await undoSource(SESSION_SOURCE)));
+
+  return (
+    <SidebarProvider>
+      <FolderTree roots={roots} selectedId={searching ? '' : folder.id} onSelect={openFolder} />
+      <SidebarInset className="min-w-0">
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 data-vertical:h-4 data-vertical:self-auto" />
+          <InputGroup className="max-w-md">
+            <InputGroupAddon>
+              <Search />
+            </InputGroupAddon>
+            <InputGroupInput
+              type="search"
+              placeholder={t.searchPlaceholder}
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setSelected(new Set());
+              }}
+            />
+          </InputGroup>
+          {counts.session > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="ml-auto"
+              disabled={busy}
+              onClick={undoSession}
+              title={t.undoSessionHint}
+            >
+              <Undo2 />
+              {t.undoSession(counts.session)}
+            </Button>
+          )}
+        </header>
+
+        <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 px-6 pt-6 pb-28">
+          {counts.auto > 0 && <AutoChangesBanner count={counts.auto} />}
+
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="truncate text-2xl font-semibold tracking-tight">
+                {searching ? t.searchResults(entries.length) : folder.title || t.untitledFolder}
+              </h1>
+              {!searching && (
+                <p className="mt-1 text-sm text-muted-foreground">{t.bookmarkCount(countBookmarks(folder))}</p>
+              )}
+            </div>
+            {!searching && (
+              <div className="flex flex-wrap items-center gap-2">
+                <SortControl folder={folder} settings={settings} />
+                <YouTubeMenu folder={folder} unavailable={unavailable} onUnavailableChange={setUnavailable} />
+                <AutomaticPopover folderId={folder.id} settings={settings} />
+              </div>
+            )}
+          </div>
+
+          {!searching && presentUnavailable.length > 0 && (
+            <UnavailableAlert
+              count={presentUnavailable.length}
+              filtering={filtering}
+              onFilterChange={(value) => {
+                setOnlyUnavailable(value);
+                setSelected(new Set());
+              }}
+            />
+          )}
+
+          <StatusAlert />
+
+          {entries.length === 0 ? (
+            <Empty className="flex-1 border">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">{searching ? <SearchX /> : <FolderOpen />}</EmptyMedia>
+                <EmptyTitle>{searching ? t.noResultsTitle : t.emptyTitle}</EmptyTitle>
+                <EmptyDescription>
+                  {searching ? t.noResultsDescription(query.trim()) : t.emptyDescription}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <BookmarkList
+              entries={entries}
+              selected={selected}
+              unavailable={unavailable}
+              allSelected={allSelected}
+              bookmarkCount={visibleIds.size}
+              onToggle={toggle}
+              onToggleAll={toggleAll}
+              onOpenFolder={openFolder}
+            />
+          )}
+        </main>
+
+        {selectedIds.length > 0 && (
+          <SelectionBar roots={roots} selected={selectedIds} onClear={() => setSelected(new Set())} />
+        )}
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
