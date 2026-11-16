@@ -12,19 +12,21 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { SESSION_SOURCE, useFolderSettingsMap, useJournalCounts } from './hooks';
 import { Check, FolderOpen, Pencil, Search, SearchX, Undo2 } from 'lucide-react';
+import { resolveFolderSettings, type SortRule } from '@/lib/settings';
 import { forgetSources, Recorder, undoSource } from '@/lib/journal';
 import { BookmarkList, type ListEntry } from './BookmarkList';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useBookmarkTree } from '@/lib/useBookmarkTree';
 import { AutoChangesBanner } from './AutoChangesBanner';
-import { resolveFolderSettings } from '@/lib/settings';
 import { UnavailableAlert } from './UnavailableAlert';
 import { Separator } from '@/components/ui/separator';
 import { AutomaticPopover } from './AutomaticPopover';
 import { RandomPickButton } from './RandomPickButton';
 import { I18nProvider, useI18n } from '@/lib/i18n';
+import { SearchSortMenu } from './SearchSortMenu';
 import { Button } from '@/components/ui/button';
 import { TaskProvider, useTask } from './task';
+import { compareBookmarks } from '@/lib/sort';
 import { SelectionBar } from './SelectionBar';
 import { StatusAlert } from './StatusAlert';
 import { SortControl } from './SortControl';
@@ -49,6 +51,10 @@ function normalize(value: string) {
   return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 }
 
+function sortEntries(entries: ListEntry[], rule: SortRule | null) {
+  return rule ? [...entries].sort((a, b) => compareBookmarks(a.node, b.node, rule)) : entries;
+}
+
 function searchEntries(roots: BookmarkNode[], query: string): ListEntry[] {
   const needle = normalize(query.trim());
   return flattenBookmarks(roots).filter(
@@ -69,6 +75,7 @@ function Shelf() {
   const [onlyUnavailable, setOnlyUnavailable] = useState(false);
   const [anchorId, setAnchorId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
+  const [searchSort, setSearchSort] = useState<SortRule | null>(null);
 
   if (!roots) return null;
 
@@ -79,7 +86,7 @@ function Shelf() {
   const presentUnavailable = (folder.children ?? []).filter((node) => unavailable.has(node.id));
   const filtering = !searching && onlyUnavailable && presentUnavailable.length > 0;
   const entries: ListEntry[] = searching
-    ? searchEntries(roots, query)
+    ? sortEntries(searchEntries(roots, query), searchSort)
     : (filtering ? presentUnavailable : (folder.children ?? [])).map((node) => ({ node }));
   const visibleIds = new Set(entries.filter(({ node }) => !isFolder(node)).map(({ node }) => node.id));
   const selectedIds = [...selected].filter((id) => visibleIds.has(id));
@@ -115,6 +122,13 @@ function Shelf() {
   const toggleAll = (checked: boolean) => setSelected(checked ? new Set(visibleIds) : new Set());
 
   const undoSession = () => run(async () => t.changesUndone(await undoSource(SESSION_SOURCE)));
+  const reorder = (id: string, insertIndex: number) =>
+    run(async () => {
+      const from = (folder.children ?? []).findIndex((node) => node.id === id);
+      if (from === -1 || insertIndex === from || insertIndex === from + 1) return;
+      await new Recorder(SESSION_SOURCE).move(id, { parentId: folder.id, index: insertIndex });
+    });
+
   const keepSession = () => forgetSources((source) => source === SESSION_SOURCE);
 
   return (
@@ -193,6 +207,7 @@ function Shelf() {
                 <p className="mt-1 text-sm text-muted-foreground">{t.bookmarkCount(countBookmarks(folder))}</p>
               )}
             </div>
+            {searching && entries.length > 1 && <SearchSortMenu rule={searchSort} onChange={setSearchSort} />}
             {!searching && (
               <div className="flex flex-wrap items-center gap-2">
                 <SortControl folder={folder} settings={settings} />
@@ -236,6 +251,7 @@ function Shelf() {
               onToggle={toggle}
               onToggleAll={toggleAll}
               onOpenFolder={openFolder}
+              onReorder={searching || filtering ? undefined : reorder}
             />
           )}
         </main>

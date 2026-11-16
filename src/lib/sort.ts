@@ -5,7 +5,7 @@ import type { Recorder } from './journal';
 
 const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
 
-function compare(a: BookmarkNode, b: BookmarkNode, rule: SortRule) {
+export function compareBookmarks(a: BookmarkNode, b: BookmarkNode, rule: SortRule) {
   const sign = rule.direction === 'asc' ? 1 : -1;
 
   if (rule.key === 'duration') {
@@ -24,7 +24,7 @@ function compare(a: BookmarkNode, b: BookmarkNode, rule: SortRule) {
 export async function sortFolder(folderId: string, rule: SortRule, recorder: Recorder) {
   const children = await chrome.bookmarks.getChildren(folderId);
   const folders = children.filter(isFolder);
-  const bookmarks = children.filter((child) => !isFolder(child)).sort((a, b) => compare(a, b, rule));
+  const bookmarks = children.filter((child) => !isFolder(child)).sort((a, b) => compareBookmarks(a, b, rule));
   const target = [...folders, ...bookmarks].map((node) => node.id);
   const current = children.map((node) => node.id);
   let moved = 0;

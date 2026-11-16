@@ -36,6 +36,7 @@ type Messages = {
   keepAuto: string;
   sortBy: string;
   order: string;
+  folderOrder: string;
   youtube: string;
   autoChangesHint: string;
   sortKeys: Record<SortKey, string>;
@@ -128,6 +129,7 @@ const en: Messages = {
   keepAuto: 'Keep',
   sortBy: 'Sort by',
   order: 'Order',
+  folderOrder: 'Folder Order',
   youtube: 'YouTube',
   autoChangesHint: 'You can undo all of them or keep them.',
   sortKeys: { duration: 'Duration', title: 'Title', length: 'Title Length' },
@@ -228,6 +230,7 @@ const ptBR: Messages = {
   keepAuto: 'Manter',
   sortBy: 'Ordenar por',
   order: 'Ordem',
+  folderOrder: 'Ordem das Pastas',
   youtube: 'YouTube',
   autoChangesHint: 'Você pode desfazer todas ou mantê-las.',
   sortKeys: { duration: 'Duração', title: 'Título', length: 'Tamanho do Título' },
@@ -328,6 +331,7 @@ const es: Messages = {
   keepAuto: 'Mantener',
   sortBy: 'Ordenar por',
   order: 'Orden',
+  folderOrder: 'Orden de las Carpetas',
   youtube: 'YouTube',
   autoChangesHint: 'Puedes deshacerlos todos o mantenerlos.',
   sortKeys: { duration: 'Duración', title: 'Título', length: 'Largo del Título' },
