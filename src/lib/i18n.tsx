@@ -77,6 +77,7 @@ type Messages = {
   autoSortDescription: (rule: string) => string;
   selectBookmark: (title: string) => string;
   editTitle: string;
+  renameFolder: string;
   selectAll: string;
   selectedCount: Counted;
   moveTo: string;
@@ -173,6 +174,7 @@ const en: Messages = {
   autoSortDescription: (rule) => `Sorts again whenever a bookmark lands here. Current order: ${rule}.`,
   selectBookmark: (title) => `Select ${title}`,
   editTitle: 'Edit Title',
+  renameFolder: 'Rename Folder',
   selectAll: 'Select All',
   selectedCount: (n) => `${n} selected`,
   moveTo: 'Move to',
@@ -270,6 +272,7 @@ const ptBR: Messages = {
   autoSortDescription: (rule) => `Ordena de novo sempre que um favorito entra aqui. Ordem atual: ${rule}.`,
   selectBookmark: (title) => `Selecionar ${title}`,
   editTitle: 'Editar Título',
+  renameFolder: 'Renomear Pasta',
   selectAll: 'Selecionar Todos',
   selectedCount: (n) => (n === 1 ? '1 selecionado' : `${n} selecionados`),
   moveTo: 'Mover para',
@@ -367,6 +370,7 @@ const es: Messages = {
   autoSortDescription: (rule) => `Vuelve a ordenar cada vez que llega un marcador. Orden actual: ${rule}.`,
   selectBookmark: (title) => `Seleccionar ${title}`,
   editTitle: 'Editar Título',
+  renameFolder: 'Renombrar Carpeta',
   selectAll: 'Seleccionar Todos',
   selectedCount: (n) => (n === 1 ? '1 seleccionado' : `${n} seleccionados`),
   moveTo: 'Mover a',

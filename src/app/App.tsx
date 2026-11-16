@@ -1,25 +1,34 @@
-import { BOOKMARKS_BAR_ID, type BookmarkNode, countBookmarks, findNode, flattenBookmarks, isFolder } from '@/lib/bookmarks';
+import {
+  BOOKMARKS_BAR_ID,
+  type BookmarkNode,
+  countBookmarks,
+  findNode,
+  flattenBookmarks,
+  isFolder,
+  ROOT_ID,
+} from '@/lib/bookmarks';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { SESSION_SOURCE, useFolderSettingsMap, useJournalCounts } from './hooks';
-import { Check, FolderOpen, Search, SearchX, Undo2 } from 'lucide-react';
+import { Check, FolderOpen, Pencil, Search, SearchX, Undo2 } from 'lucide-react';
+import { forgetSources, Recorder, undoSource } from '@/lib/journal';
 import { BookmarkList, type ListEntry } from './BookmarkList';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useBookmarkTree } from '@/lib/useBookmarkTree';
-import { UnavailableAlert } from './UnavailableAlert';
 import { AutoChangesBanner } from './AutoChangesBanner';
-import { StatusAlert } from './StatusAlert';
 import { resolveFolderSettings } from '@/lib/settings';
+import { UnavailableAlert } from './UnavailableAlert';
 import { Separator } from '@/components/ui/separator';
-import { I18nProvider, useI18n } from '@/lib/i18n';
 import { AutomaticPopover } from './AutomaticPopover';
-import { TaskProvider, useTask } from './task';
+import { I18nProvider, useI18n } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
+import { TaskProvider, useTask } from './task';
 import { SelectionBar } from './SelectionBar';
-import { forgetSources, undoSource } from '@/lib/journal';
+import { StatusAlert } from './StatusAlert';
 import { SortControl } from './SortControl';
 import { YouTubeMenu } from './YouTubeMenu';
+import { TitleInput } from './TitleInput';
 import { FolderTree } from './FolderTree';
 import { useState } from 'react';
 
@@ -58,12 +67,14 @@ function Shelf() {
   const [unavailable, setUnavailable] = useState<Set<string>>(new Set());
   const [onlyUnavailable, setOnlyUnavailable] = useState(false);
   const [anchorId, setAnchorId] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState(false);
 
   if (!roots) return null;
 
   const folder = findNode(roots, folderId) ?? roots[0];
   const settings = resolveFolderSettings(settingsMap, folder.id);
   const searching = query.trim().length > 0;
+  const renamable = !searching && folder.parentId !== ROOT_ID;
   const presentUnavailable = (folder.children ?? []).filter((node) => unavailable.has(node.id));
   const filtering = !searching && onlyUnavailable && presentUnavailable.length > 0;
   const entries: ListEntry[] = searching
@@ -79,6 +90,7 @@ function Shelf() {
     setSelected(new Set());
     setUnavailable(new Set());
     setOnlyUnavailable(false);
+    setRenaming(false);
     clear();
   };
 
@@ -144,9 +156,38 @@ function Shelf() {
 
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="min-w-0">
-              <h1 className="truncate text-2xl font-semibold tracking-tight">
-                {searching ? t.searchResults(entries.length) : folder.title || t.untitledFolder}
-              </h1>
+              {renaming ? (
+                <TitleInput
+                  value={folder.title}
+                  label={t.renameFolder}
+                  className="h-9 text-2xl font-semibold tracking-tight md:text-2xl"
+                  onDone={(value) => {
+                    setRenaming(false);
+                    if (value) void new Recorder(SESSION_SOURCE).updateTitle(folder.id, value);
+                  }}
+                />
+              ) : (
+                <div className="group/title flex items-center gap-1">
+                  <h1
+                    className="truncate text-2xl font-semibold tracking-tight"
+                    onDoubleClick={() => renamable && setRenaming(true)}
+                  >
+                    {searching ? t.searchResults(entries.length) : folder.title || t.untitledFolder}
+                  </h1>
+                  {renamable && (
+                    <Button
+                      size="icon-xs"
+                      variant="ghost"
+                      className="opacity-0 transition-opacity group-hover/title:opacity-100 focus-visible:opacity-100"
+                      onClick={() => setRenaming(true)}
+                      aria-label={t.renameFolder}
+                      title={t.renameFolder}
+                    >
+                      <Pencil />
+                    </Button>
+                  )}
+                </div>
+              )}
               {!searching && (
                 <p className="mt-1 text-sm text-muted-foreground">{t.bookmarkCount(countBookmarks(folder))}</p>
               )}

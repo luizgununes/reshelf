@@ -3,8 +3,8 @@ import { durationFromTitle, formatDuration, stripDuration, withDuration } from '
 import { ChevronRight, Folder, Pencil } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { TitleInput } from './TitleInput';
 import { Recorder } from '@/lib/journal';
 import { SESSION_SOURCE } from './hooks';
 import { useI18n } from '@/lib/i18n';
@@ -50,21 +50,7 @@ export function BookmarkList({
       <ul className="divide-y">
         {entries.map(({ node, path }) =>
           isFolder(node) ? (
-            <li key={node.id}>
-              <button
-                type="button"
-                onClick={() => onOpenFolder(node.id)}
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-muted/50"
-              >
-                <span className="size-4 shrink-0" />
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
-                  <Folder className="size-4 text-muted-foreground" />
-                </span>
-                <span className="min-w-0 flex-1 truncate text-sm font-medium">{node.title || t.untitledFolder}</span>
-                <span className="text-xs text-muted-foreground">{t.bookmarkCount(countBookmarks(node))}</span>
-                <ChevronRight className="size-4 text-muted-foreground" />
-              </button>
-            </li>
+            <FolderRow key={node.id} folder={node} onOpen={onOpenFolder} />
           ) : (
             <BookmarkRow
               key={node.id}
@@ -97,13 +83,8 @@ function BookmarkRow({ node, path, checked, unavailable, onToggle }: BookmarkRow
   const host = displayHost(node.url!);
   const folderPath = path?.map((part) => part || t.untitledFolder).join(' / ');
 
-  const save = async (value: string) => {
-    setEditing(false);
-    const trimmed = value.trim();
-    if (!trimmed || trimmed === title) return;
-    const next = seconds === null ? trimmed : withDuration(trimmed, seconds);
-    await new Recorder(SESSION_SOURCE).updateTitle(node.id, next);
-  };
+  const save = (value: string) =>
+    new Recorder(SESSION_SOURCE).updateTitle(node.id, seconds === null ? value : withDuration(value, seconds));
 
   return (
     <li
@@ -127,16 +108,12 @@ function BookmarkRow({ node, path, checked, unavailable, onToggle }: BookmarkRow
       </span>
       <div className="min-w-0 flex-1">
         {editing ? (
-          <Input
-            autoFocus
-            defaultValue={title}
-            aria-label={t.editTitle}
-            className="h-7 text-sm font-medium"
-            onFocus={(event) => event.currentTarget.select()}
-            onBlur={(event) => save(event.currentTarget.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') event.currentTarget.blur();
-              if (event.key === 'Escape') setEditing(false);
+          <TitleInput
+            value={title}
+            label={t.editTitle}
+            onDone={(value) => {
+              setEditing(false);
+              if (value) void save(value);
             }}
           />
         ) : (
@@ -170,6 +147,65 @@ function BookmarkRow({ node, path, checked, unavailable, onToggle }: BookmarkRow
           {formatDuration(seconds)}
         </Badge>
       )}
+    </li>
+  );
+}
+
+function FolderRow({ folder, onOpen }: { folder: BookmarkNode; onOpen: (id: string) => void }) {
+  const { t } = useI18n();
+  const [editing, setEditing] = useState(false);
+  const name = folder.title || t.untitledFolder;
+
+  return (
+    <li
+      onDoubleClick={() => setEditing(true)}
+      className="group/row flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-muted/50"
+    >
+      <span className="size-4 shrink-0" />
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+        <Folder className="size-4 text-muted-foreground" />
+      </span>
+      {editing ? (
+        <div className="min-w-0 flex-1">
+          <TitleInput
+            value={folder.title}
+            label={t.renameFolder}
+            onDone={(value) => {
+              setEditing(false);
+              if (value) void new Recorder(SESSION_SOURCE).updateTitle(folder.id, value);
+            }}
+          />
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onOpen(folder.id)}
+          className="min-w-0 flex-1 truncate text-left text-sm font-medium underline-offset-4 hover:underline"
+        >
+          {name}
+        </button>
+      )}
+      {!editing && (
+        <Button
+          size="icon-xs"
+          variant="ghost"
+          className="opacity-0 transition-opacity group-hover/row:opacity-100 focus-visible:opacity-100"
+          onClick={() => setEditing(true)}
+          aria-label={t.renameFolder}
+          title={t.renameFolder}
+        >
+          <Pencil />
+        </Button>
+      )}
+      <span className="text-xs text-muted-foreground">{t.bookmarkCount(countBookmarks(folder))}</span>
+      <button
+        type="button"
+        onClick={() => onOpen(folder.id)}
+        aria-label={name}
+        className="rounded-sm text-muted-foreground hover:text-foreground"
+      >
+        <ChevronRight className="size-4" />
+      </button>
     </li>
   );
 }

@@ -6,8 +6,6 @@ const APP_PATH = 'src/app/index.html';
 registerAutomation();
 
 chrome.action.onClicked.addListener(async () => {
-  void takeBackup('open');
-
   const url = chrome.runtime.getURL(APP_PATH);
   const [existing] = await chrome.runtime.getContexts({
     contextTypes: [chrome.runtime.ContextType.TAB],
@@ -18,5 +16,6 @@ chrome.action.onClicked.addListener(async () => {
     await chrome.windows.update(existing.windowId, { focused: true });
     return;
   }
+  await takeBackup('open');
   await chrome.tabs.create({ url });
 });
